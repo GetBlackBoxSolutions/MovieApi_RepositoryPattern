@@ -1,6 +1,6 @@
-﻿using Infrastructure.Data;
+﻿using ApplicationCore.Entities;
+using ApplicationCore.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using MovieApi_RepositoryPattern.DTOs;
 
 namespace MovieApi_RepositoryPattern.Controllers
@@ -10,25 +10,27 @@ namespace MovieApi_RepositoryPattern.Controllers
     public class RatingsController : ControllerBase
     {
         private readonly ILogger<RatingsController> _logger;
-        private readonly DataContext _dataContext;
+        private readonly IRepository<Rating> _ratingRepository;
 
         public RatingsController(
-            ILogger<RatingsController> logger,
-            DataContext dataContext)
+            ILogger<RatingsController> logger,            
+            IRepository<Rating> ratingRepository)
         {
-            _logger = logger;
-            _dataContext = dataContext;
+            _logger = logger;            
+            _ratingRepository = ratingRepository;
         }
 
         [HttpGet(Name = "GetRatings")]
         public async Task<IEnumerable<RatingDTO>> Get()
         {
             _logger.LogInformation("Getting ratings");
-            return await _dataContext.Ratings.Select(r => new RatingDTO
-            {
-                Id = r.Id,
-                Rating = r.Type
-            }).ToListAsync();
+
+            var data = await _ratingRepository.GetAsync();
+            return data.Select(x => new RatingDTO
+                {
+                    Id = x.Id,
+                    Rating = x.Type
+                }).ToList();
         }
     }
 }

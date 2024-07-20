@@ -1,7 +1,6 @@
 ﻿using ApplicationCore.Entities;
-using Infrastructure.Data;
+using ApplicationCore.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using MovieApi_RepositoryPattern.DTOs;
 
 namespace MovieApi_RepositoryPattern.Controllers
@@ -11,23 +10,24 @@ namespace MovieApi_RepositoryPattern.Controllers
     public class GenresController : ControllerBase
     {
         private readonly ILogger<GenresController> _logger;
-        private readonly DataContext _dataContext;
+        private readonly IRepository<Genre> _genreRepository;
         public GenresController(
             ILogger<GenresController> logger,
-            DataContext dataContext)
+            IRepository<Genre> genreRepository)
         {
             _logger = logger;
-            _dataContext = dataContext;
+            _genreRepository = genreRepository;
         }
         [HttpGet(Name = "GetGenres")]
         public async Task<ICollection<GenreDTO>> Get()
         {
             _logger.LogInformation("Getting genres");
-            return await _dataContext.Genres.Select(g => new GenreDTO
+            var data = await _genreRepository.GetAsync();
+            return data.Select(g => new GenreDTO
             {
                 Id = g.Id,
                 Genre = g.Type,
-            }).ToListAsync();
+            }).ToList();
         }
     }
 }
