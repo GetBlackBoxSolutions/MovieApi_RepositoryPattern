@@ -76,24 +76,29 @@ namespace Infrastructure.Data
                         Type = "Thriller"
                     },
                 };  
+
+                await context.Genres.AddRangeAsync(genres);
+                await context.SaveChangesAsync();
             }
 
             if (!await context.Movies.AnyAsync())
             {
+                var genres = await context.Genres.ToListAsync();
+                var ratings = await context.Ratings.ToListAsync();
+
+                //populate with movies
                 var movies = new List<Movie>
-                {                    
+                {
                     new Movie
                     {
                         Title = "The Shawshank Redemption",
                         Description = "Two imprisoned",
                         YearReleased = 1994,
-                        RatingId = 4,
+                        RatingId = ratings.First(r => r.Type == "R").Id,
                         MovieGenres = new List<Genre>
                         {
-                            new Genre
-                            {
-                                Type = "Drama"
-                            }
+                            genres[3],
+                            genres[6]
                         }
                     },
                     new Movie
@@ -101,17 +106,11 @@ namespace Infrastructure.Data
                         Title = "The Godfather",
                         Description = "The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.",
                         YearReleased = 1972,
-                        RatingId = 4,
+                        RatingId = ratings.First(r => r.Type == "R").Id,
                         MovieGenres = new List<Genre>
                         {
-                            new Genre
-                            {
-                                Type = "Crime"
-                            },
-                            new Genre
-                            {
-                                Type = "Drama"
-                            }
+                            genres[3],
+                            genres[6]
                         }
                     },
                     new Movie
@@ -119,21 +118,11 @@ namespace Infrastructure.Data
                         Title = "The Dark Knight",
                         Description = "When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.",
                         YearReleased = 2008,
-                        RatingId = 4,
+                        RatingId = ratings.First(r => r.Type == "PG-13").Id,
                         MovieGenres = new List<Genre>
                         {
-                            new Genre
-                            {
-                                Type = "Action"
-                            },
-                            new Genre
-                            {
-                                Type = "Crime"
-                            },
-                            new Genre
-                            {
-                                Type = "Drama"
-                            }
+                            genres[0],
+                            genres[8]
                         }
                     },
                 };
