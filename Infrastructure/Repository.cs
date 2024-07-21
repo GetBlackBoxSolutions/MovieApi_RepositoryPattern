@@ -51,14 +51,12 @@ namespace Infrastructure
         public async Task AddAsync(TEntity entity)
         {            
             await _dbSet.AddAsync(entity);
-            await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(TEntity entity)
+        public void Update(TEntity entity)
         {
             _dbSet.Attach(entity);
-            _context.Entry(entity).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            _context.Entry(entity).State = EntityState.Modified;            
         }
 
         public async Task DeleteAsync(object id)
@@ -66,18 +64,18 @@ namespace Infrastructure
             var entityToDelete = await _dbSet.FindAsync(id);
             if (entityToDelete != null)
             {
-                await DeleteAsync(entityToDelete);
+                Delete(entityToDelete);
             }
         }
 
-        public async Task DeleteAsync(TEntity entityToDelete)
+        public void Delete(TEntity entityToDelete)
         {
             if (_context.Entry(entityToDelete).State == EntityState.Detached)
             {
                 _dbSet.Attach(entityToDelete);
             }
-            _dbSet.Remove(entityToDelete);
-            await _context.SaveChangesAsync();
+            
+            _dbSet.Remove(entityToDelete);            
         }
     }
 }

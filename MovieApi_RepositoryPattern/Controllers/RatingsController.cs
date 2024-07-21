@@ -1,5 +1,4 @@
-﻿using ApplicationCore.Entities;
-using ApplicationCore.Interfaces;
+﻿using ApplicationCore.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using MovieApi_RepositoryPattern.DTOs;
 
@@ -10,14 +9,14 @@ namespace MovieApi_RepositoryPattern.Controllers
     public class RatingsController : ControllerBase
     {
         private readonly ILogger<RatingsController> _logger;
-        private readonly IRepository<Rating> _ratingRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
         public RatingsController(
             ILogger<RatingsController> logger,            
-            IRepository<Rating> ratingRepository)
+            IUnitOfWork unitOfWork)
         {
             _logger = logger;            
-            _ratingRepository = ratingRepository;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet(Name = "GetRatings")]
@@ -25,7 +24,7 @@ namespace MovieApi_RepositoryPattern.Controllers
         {
             _logger.LogInformation("Getting ratings");
 
-            var data = await _ratingRepository.GetAsync();
+            var data = await _unitOfWork.RatingRepository.GetAsync();
             return data.Select(x => new RatingDTO
                 {
                     Id = x.Id,

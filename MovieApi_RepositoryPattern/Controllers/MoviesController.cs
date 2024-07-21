@@ -10,28 +10,22 @@ namespace MovieApi_RepositoryPattern.Controllers
     public class MoviesController : ControllerBase
     {
         private readonly ILogger<MoviesController> _logger;
-        private readonly IRepository<Movie> _movieRepository;
-        private readonly IRepository<Genre> _genreRepository;
-        private readonly IRepository<Rating> _ratingRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
         public MoviesController(
             ILogger<MoviesController> logger,
-            IRepository<Movie> movieRepository,
-            IRepository<Genre> genreRepoitory,
-            IRepository<Rating> ratingRepository
+            IUnitOfWork unitOfWork
             )
         {
             _logger = logger;
-            _movieRepository = movieRepository;
-            _genreRepository = genreRepoitory;
-            _ratingRepository = ratingRepository;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet(Name = "GetMovies")]
         public async Task<ICollection<MovieDTO>> Get()
         {
             _logger.LogInformation("Getting movies");
-            var data = await _movieRepository.GetAsync(includeProperties: "Rating,MovieGenres");
+            var data = await _unitOfWork.MovieRepository.GetAsync(includeProperties: "Rating,MovieGenres");
             return data.Select(m => new MovieDTO
             {
                 Id = m.Id,
@@ -53,8 +47,8 @@ namespace MovieApi_RepositoryPattern.Controllers
         {
             _logger.LogInformation("Adding a movie");
             
-            var genres = await _genreRepository.GetAsync(g => movieDTO.Genres.Select(g => g.Id).Contains(g.Id));
-            var rating = await _ratingRepository.GetAsync(r => r.Id == movieDTO.RatingId);
+            var genres = await _unitOfWork.GenreRepository.GetAsync(g => movieDTO.Genres.Select(g => g.Id).Contains(g.Id));
+            var rating = await _unitOfWork.RatingRepository.GetAsync(r => r.Id == movieDTO.RatingId);
 
             var movie = new Movie
             {
@@ -65,8 +59,18 @@ namespace MovieApi_RepositoryPattern.Controllers
                 MovieGenres = genres.ToList()
             };
 
-            await _movieRepository.AddAsync(movie);
+            await _unitOfWork.MovieRepository.AddAsync(movie);
+            await _unitOfWork.SaveChangesAsync();
             return Ok();
-        }   
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            _logger.LogInformation("Deleting a movie");
+            await _unitOfWork.MovieRepository.DeleteAsync(id);
+            await _unitOfWork.SaveChangesAsync();
+            return Ok();
+        }
     }
 }
