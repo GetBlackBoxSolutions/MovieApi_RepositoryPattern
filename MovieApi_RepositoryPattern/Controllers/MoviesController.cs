@@ -11,13 +11,20 @@ namespace MovieApi_RepositoryPattern.Controllers
     {
         private readonly ILogger<MoviesController> _logger;
         private readonly IRepository<Movie> _movieRepository;
+        private readonly IRepository<Genre> _genreRepository;
+        private readonly IRepository<Rating> _ratingRepository;
 
         public MoviesController(
             ILogger<MoviesController> logger,
-            IRepository<Movie> movieRepository)
+            IRepository<Movie> movieRepository,
+            IRepository<Genre> genreRepoitory,
+            IRepository<Rating> ratingRepository
+            )
         {
             _logger = logger;
             _movieRepository = movieRepository;
+            _genreRepository = genreRepoitory;
+            _ratingRepository = ratingRepository;
         }
 
         [HttpGet(Name = "GetMovies")]
@@ -29,7 +36,9 @@ namespace MovieApi_RepositoryPattern.Controllers
             {
                 Id = m.Id,
                 Title = m.Title,
+                Description = m.Description,
                 YearReleased = m.YearReleased,
+                RatingId = m.RatingId,
                 Rating = new RatingDTO
                 {
                     Id = m.RatingId,
@@ -38,5 +47,26 @@ namespace MovieApi_RepositoryPattern.Controllers
                 Genres = m.MovieGenres.Select(mg => new GenreDTO { Id = mg.Id, Genre = mg.Type }).ToList(),
             }).ToList();                    
         }
+
+        [HttpPost]
+        public async Task<IActionResult> Post([FromBody] MoviePostDTO movieDTO)
+        {
+            _logger.LogInformation("Adding a movie");
+            
+            var genres = await _genreRepository.GetAsync(g => movieDTO.Genres.Select(g => g.Id).Contains(g.Id));
+            var rating = await _ratingRepository.GetAsync(r => r.Id == movieDTO.RatingId);
+
+            var movie = new Movie
+            {
+                Title = movieDTO.Title,
+                Description = movieDTO.Description,
+                YearReleased = movieDTO.YearReleased,
+                RatingId = rating.First().Id,
+                MovieGenres = genres.ToList()
+            };
+
+            await _movieRepository.AddAsync(movie);
+            return Ok();
+        }   
     }
 }

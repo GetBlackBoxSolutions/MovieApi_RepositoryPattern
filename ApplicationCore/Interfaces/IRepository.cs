@@ -10,8 +10,8 @@ namespace ApplicationCore.Interfaces
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             string includeProperties = "");
 
-        void Add(TEntity entity);
-        void Update(TEntity entity);
-        void Delete(object id);
+        Task AddAsync(TEntity entity);
+        Task UpdateAsync(TEntity entity);
+        Task DeleteAsync(object id);
     }
 }

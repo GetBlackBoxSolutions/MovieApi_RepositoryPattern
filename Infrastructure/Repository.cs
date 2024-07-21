@@ -48,33 +48,36 @@ namespace Infrastructure
             }
         }
 
-        public void Add(TEntity entity)
-        {
-            _dbSet.Add(entity);
+        public async Task AddAsync(TEntity entity)
+        {            
+            await _dbSet.AddAsync(entity);
+            await _context.SaveChangesAsync();
         }
 
-        public void Update(TEntity entity)
+        public async Task UpdateAsync(TEntity entity)
         {
             _dbSet.Attach(entity);
             _context.Entry(entity).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
         }
 
-        public void Delete(object id)
+        public async Task DeleteAsync(object id)
         {
-            var entityToDelete = _dbSet.Find(id);
+            var entityToDelete = await _dbSet.FindAsync(id);
             if (entityToDelete != null)
             {
-                Delete(entityToDelete);
+                await DeleteAsync(entityToDelete);
             }
         }
 
-        public void Delete(TEntity entityToDelete)
+        public async Task DeleteAsync(TEntity entityToDelete)
         {
             if (_context.Entry(entityToDelete).State == EntityState.Detached)
             {
                 _dbSet.Attach(entityToDelete);
             }
             _dbSet.Remove(entityToDelete);
+            await _context.SaveChangesAsync();
         }
     }
 }
